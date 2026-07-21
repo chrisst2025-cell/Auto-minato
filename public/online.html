@@ -1,285 +1,419 @@
 <!DOCTYPE html>
 <html lang="fr">
    <head>
-      <meta charset="UTF-8">
-      <title>Minato Bot - Utilisateurs en Ligne</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      
-      <!-- Feuilles de style -->
+      <title>Minato Bot - Utilisateurs Actifs</title>
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;500;600;700&display=swap">
-      
-      <style>
-         :root {
-             --minato-yellow: #facc15;
-             --minato-gold: #eab308;
-             --minato-orange: #f97316;
-             --rasengan-blue: #06b6d4;
-             --dark-bg: rgba(10, 15, 30, 0.82);
-             --glass-bg: rgba(18, 25, 45, 0.72);
-             --border-glow: rgba(250, 204, 21, 0.4);
-             --text-color: #f8fafc;
-             --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-         }
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="sty.css">
+<style>
+/* Variables thématiques Minato Namikaze (L'Éclair Jaune) */
+:root {
+    --yellow-glow: #ffd700;
+    --yellow-accent: #ffae00;
+    --cyan-glow: #00f0ff;
+    --dark-bg: #0b0e14;
+    --card-bg: rgba(18, 24, 38, 0.82);
+    --text-color: #e2e8f0;
+    --border-glow: rgba(255, 215, 0, 0.4);
+    --shadow-yellow: 0 0 20px rgba(255, 215, 0, 0.35);
+    --transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-         * {
-             margin: 0;
-             padding: 0;
-             box-sizing: border-box;
-             font-family: 'Poppins', sans-serif;
-         }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Rajdhani', 'Poppins', sans-serif;
+}
 
-         body {
-             background: linear-gradient(135deg, #090d16 0%, #111827 50%, #030712 100%), 
-                         url('https://images.alphacoders.com/605/605592.png') no-repeat center center fixed;
-             background-size: cover;
-             color: var(--text-color);
-             line-height: 1.6;
-             min-height: 100vh;
-             position: relative;
-             overflow-x: hidden;
-         }
+body {
+    background: linear-gradient(135deg, #07090e 0%, #0f172a 100%);
+    background-image: var(--custom-bg, radial-gradient(circle at 50% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 60%));
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-         /* Effet d'éclairs animés en arrière-plan */
-         body::before {
-             content: '';
-             position: fixed;
-             top: 0; left: 0; right: 0; bottom: 0;
-             background: radial-gradient(circle at 50% 20%, rgba(250, 204, 21, 0.08) 0%, transparent 60%);
-             pointer-events: none;
-             z-index: 0;
-             animation: pulseGlow 6s infinite alternate;
-         }
+/* Animations Globales */
+@keyframes yellowPulse {
+    0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.7); }
+    100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+}
 
-         @keyframes pulseGlow {
-             0% { opacity: 0.4; }
-             100% { opacity: 1; }
-         }
+@keyframes textGlow {
+    0%, 100% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
+    50% { text-shadow: 0 0 18px rgba(255, 215, 0, 0.9), 0 0 28px rgba(0, 240, 255, 0.6); }
+}
 
-         /* Barre de défilement */
-         ::-webkit-scrollbar {
-             width: 10px;
-         }
-         ::-webkit-scrollbar-track {
-             background: rgba(15, 23, 42, 0.8);
-         }
-         ::-webkit-scrollbar-thumb {
-             background: linear-gradient(180deg, var(--minato-yellow), var(--minato-orange));
-             border-radius: 5px;
-             box-shadow: 0 0 10px var(--minato-yellow);
-         }
+@keyframes fadeInContainer {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-         /* Navigation Bar */
-         .navbar {
-             background: rgba(10, 15, 30, 0.85) !important;
-             backdrop-filter: blur(15px);
-             border-bottom: 2px solid var(--border-glow);
-             box-shadow: 0 4px 25px rgba(250, 204, 21, 0.15);
-             padding: 0.8rem 2rem;
-             position: sticky;
-             top: 0;
-             z-index: 1000;
-         }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #090d14;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--yellow-accent);
+    border-radius: 4px;
+    box-shadow: 0 0 10px var(--yellow-accent);
+}
 
-         .navbar-brand {
-             font-family: 'Orbitron', sans-serif;
-             font-weight: 700;
-             color: var(--minato-yellow) !important;
-             font-size: 1.4rem;
-             text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
-             display: flex;
-             align-items: center;
-             gap: 10px;
-         }
+/* Navbar Styling */
+.navbar {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    background: rgba(11, 14, 20, 0.92) !important;
+    padding: 0.8rem 2rem;
+    border-bottom: 2px solid var(--border-glow);
+    transition: var(--transition);
+}
 
-         .nav-link {
-             color: #cbd5e1 !important;
-             font-weight: 500;
-             padding: 0.5rem 1.2rem !important;
-             border-radius: 8px;
-             transition: var(--transition);
-         }
+.navbar-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    color: var(--yellow-glow) !important;
+    font-size: 1.6rem;
+    letter-spacing: 1.5px;
+    animation: textGlow 3s infinite ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-         .nav-link:hover, .nav-item.active .nav-link {
-             color: var(--minato-yellow) !important;
-             background: rgba(250, 204, 21, 0.1);
-             text-shadow: 0 0 8px var(--minato-yellow);
-         }
+.nav-link {
+    position: relative;
+    padding: 0.5rem 1rem !important;
+    margin: 0 0.2rem;
+    color: #cbd5e1 !important;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: var(--transition);
+}
 
-         /* Conteneurs avec effet verre */
-         .container {
-             background: var(--glass-bg);
-             backdrop-filter: blur(16px);
-             -webkit-backdrop-filter: blur(16px);
-             border: 1px solid var(--border-glow);
-             border-radius: 18px;
-             padding: 2rem;
-             margin: 2rem auto;
-             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-             animation: fadeInUp 0.8s ease-out;
-         }
+.nav-link:hover {
+    color: var(--yellow-glow) !important;
+    transform: translateY(-2px);
+}
 
-         h1 {
-             font-family: 'Orbitron', sans-serif;
-             color: var(--minato-yellow);
-             letter-spacing: 0.5px;
-         }
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--yellow-glow);
+    box-shadow: 0 0 10px var(--yellow-glow);
+    transition: var(--transition);
+    transform: translateX(-50%);
+}
 
-         /* Style des Cartes Utilisateurs en Ligne */
-         .user-card {
-             display: flex;
-             align-items: center;
-             background: rgba(15, 23, 42, 0.7);
-             border: 1px solid var(--border-glow);
-             border-radius: 14px;
-             padding: 12px;
-             width: 100%;
-             transition: var(--transition);
-             animation: glowCard 3s infinite alternate;
-             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-         }
+.nav-link:hover::after {
+    width: 80%;
+}
 
-         .user-card:hover {
-             transform: translateY(-3px) scale(1.01);
-             border-color: var(--minato-yellow);
-             box-shadow: 0 8px 25px rgba(250, 204, 21, 0.3);
-             background: rgba(20, 30, 55, 0.85);
-         }
+.dropdown-menu {
+    border: 1px solid var(--border-glow);
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-yellow);
+    border-radius: 8px;
+    animation: fadeInContainer 0.3s ease;
+}
 
-         @keyframes glowCard {
-             from {
-                 border-color: rgba(250, 204, 21, 0.3);
-                 box-shadow: 0 0 10px rgba(250, 204, 21, 0.1);
-             }
-             to {
-                 border-color: var(--rasengan-blue);
-                 box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-             }
-         }
+.dropdown-item {
+    color: #cbd5e1 !important;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    transition: var(--transition);
+}
 
-         .user-card img {
-             width: 65px;
-             height: 65px;
-             object-fit: cover;
-             border-radius: 50%;
-             border: 2px solid var(--minato-yellow);
-             box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
-             margin-right: 15px;
-         }
+.dropdown-item:hover {
+    background: rgba(255, 215, 0, 0.15);
+    color: var(--yellow-glow) !important;
+    padding-left: 1.5rem;
+}
 
-         .user-info {
-             flex-grow: 1;
-             overflow: hidden;
-         }
+.dropdown-divider {
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
+}
 
-         .user-info h4 {
-             font-family: 'Orbitron', sans-serif;
-             color: #fff;
-             font-size: 1.05rem;
-             font-weight: 600;
-             margin-bottom: 4px;
-             white-space: nowrap;
-             overflow: hidden;
-             text-overflow: ellipsis;
-             text-align: left;
-         }
+/* Settings Gear Button */
+.settings-btn-nav {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1.5px solid var(--yellow-glow);
+    color: var(--yellow-glow);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: var(--transition);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
 
-         .user-info p {
-             margin: 0;
-             font-size: 0.85rem;
-             color: #94a3b8;
-             white-space: nowrap;
-             overflow: hidden;
-             text-overflow: ellipsis;
-             text-align: left;
-         }
+.settings-btn-nav:hover {
+    transform: rotate(90deg) scale(1.1);
+    background: var(--yellow-glow);
+    color: #000;
+    box-shadow: 0 0 20px var(--yellow-glow);
+}
 
-         .user-info p a {
-             color: var(--rasengan-blue);
-             text-decoration: none;
-             transition: var(--transition);
-         }
+/* Container principal */
+.container {
+    max-width: 850px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: var(--transition);
+    animation: fadeInContainer 0.6s ease-out forwards;
+}
 
-         .user-info p a:hover {
-             color: var(--minato-yellow);
-             text-shadow: 0 0 8px var(--minato-yellow);
-         }
+/* Titres */
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--yellow-glow) !important;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: inline-block;
+    animation: textGlow 4s infinite ease-in-out;
+}
 
-         p.uptime-user {
-             color: var(--minato-yellow);
-             font-weight: 600;
-             font-size: 0.85rem;
-             margin-top: 2px;
-             display: flex;
-             align-items: center;
-             gap: 6px;
-         }
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--yellow-glow), transparent);
+}
 
-         p.uptime-user::before {
-             content: '';
-             display: inline-block;
-             width: 8px;
-             height: 8px;
-             background-color: #22c55e;
-             border-radius: 50%;
-             box-shadow: 0 0 8px #22c55e;
-         }
+/* Style Cartes Utilisateurs Actifs */
+.user-card {
+    display: flex;
+    align-items: center;
+    background: rgba(10, 15, 26, 0.7);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 15px;
+    width: 100%;
+    transition: var(--transition);
+    animation: yellowPulse 4s infinite ease-in-out;
+}
 
-         @keyframes fadeInUp {
-             from { opacity: 0; transform: translateY(20px); }
-             to { opacity: 1; transform: translateY(0); }
-         }
+.user-card:hover {
+    border-color: var(--yellow-glow);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    transform: translateY(-3px);
+}
 
-         @media (max-width: 768px) {
-             .container { padding: 1.2rem; margin: 1rem; }
-             .user-card img { width: 50px; height: 50px; }
-         }
-      </style>
+.user-card img {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--yellow-glow);
+    margin-right: 15px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.user-info {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.user-info h4 {
+    margin: 0 0 4px 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info p a {
+    color: var(--cyan-glow);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.user-info p a:hover {
+    color: var(--yellow-glow);
+    text-shadow: 0 0 8px var(--yellow-glow);
+}
+
+.uptime-badge {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 10px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 20px;
+    color: var(--yellow-glow);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Modale Paramètres */
+.modal-content {
+    background: #0f172a;
+    border: 2px solid var(--yellow-glow);
+    border-radius: 12px;
+    color: #fff;
+    box-shadow: var(--shadow-yellow);
+}
+
+.modal-header, .modal-footer {
+    border-color: rgba(255, 215, 0, 0.2);
+}
+
+/* Footer Styling */
+.footer {
+    background: rgba(7, 9, 14, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 0.8rem 1.5rem;
+    margin-top: 3rem;
+    width: 100%;
+    border-top: 1px solid var(--border-glow);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.footer p {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.footer span {
+    color: var(--yellow-glow);
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1.2rem;
+        margin: 1rem auto;
+        width: 92%;
+    }
+    .user-card {
+        flex-direction: row;
+    }
+    .footer {
+        flex-direction: column;
+        gap: 5px;
+        text-align: center;
+    }
+}
+</style>
    </head>
    <body>
-
-      <!-- Barre de Navigation -->
-      <nav class="navbar navbar-expand-lg">
-         <a class="navbar-brand" href="/">
-            <i class="fa-solid fa-bolt"></i> Minato Bot
-         </a>
-         <button class="navbar-toggler text-white" type="button" data-toggle="collapse" data-target="#navbarNav">
-            <i class="fa-solid fa-bars" style="color: var(--minato-yellow);"></i>
-         </button>
-         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+         <a class="navbar-brand" href="/"><i class="fa-solid fa-bolt"></i> Minato Bot</a>
+         <div class="d-flex align-items-center ml-auto order-lg-last">
+            <div class="settings-btn-nav" data-toggle="modal" data-target="#settingsModal" title="Paramètres">
+               <i class="fas fa-cog"></i>
+            </div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+               <span class="navbar-toggler-icon"></span>
+            </button>
+         </div>
+         <div class="collapse navbar-collapse justify-content-end" id="navbarNav" style="margin-right: 20px;">
             <ul class="navbar-nav">
                <li class="nav-item">
-                  <a class="nav-link" href="/"><i class="fa-solid fa-house"></i> Accueil</a>
-               </li>
-               <li class="nav-item active">
-                  <a class="nav-link" href="online_user"><i class="fa-solid fa-users"></i> En Ligne</a>
+                  <a class="nav-link" href="/">Accueil</a>
                </li>
                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
-                     <i class="fa-solid fa-sliders"></i> Fonctionnalités
-                  </a>
-                  <div class="dropdown-menu bg-dark text-white border-warning">
-                     <a class="dropdown-item text-warning" href="#"><i class="fa-solid fa-cookie"></i> Extracteur de Cookies</a>
-                     <div class="dropdown-divider border-secondary"></div>
-                     <a class="dropdown-item text-white" href="/step_by_step_guide"><i class="fa-solid fa-book"></i> Guide Étape par Étape</a>
+                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Fonctionnalités </a>
+                  <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                     <a class="dropdown-item" href="#">Extracteur de Cookies</a>
+                     <div class="dropdown-divider"></div>
+                     <a class="dropdown-item" href="/step_by_step_guide">Guide Étape par Étape</a>
                   </div>
+               </li>
+               <li class="nav-item active">
+                  <a class="nav-link" href="online_user">Actif <span class="sr-only">(actuel)</span></a>
                </li>
             </ul>
          </div>
       </nav>
 
-      <!-- Liste des Bots Actifs -->
       <div class="container">
-         <div class="row mb-3">
-            <h1 class="col text-start" style="font-size: 1.3rem;">
-               <i class="fa-solid fa-signal text-success"></i> Bots Actuellement en Ligne
-            </h1>
+         <div class="row">
+            <h1 class="col text-start" style="font-size: 22px;"><i class="fa-solid fa-signal" style="margin-right: 8px;"></i> Session(s) Active(s)</h1>
          </div>
-         <div class="row" id="user_online"></div>
+         <div class="row mt-3" id="user_online"></div>
       </div>
 
-      <!-- Scripts -->
+      <!-- Modal Paramètres -->
+      <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title" id="settingsModalLabel" style="color: var(--yellow-glow); font-family: 'Orbitron';"><i class="fas fa-sliders-h"></i> Paramètres de Personnalisation</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Fermer" style="color: var(--yellow-glow);">
+                     <span aria-hidden="true">&times;</span>
+                  </button>
+               </div>
+               <div class="modal-body">
+                  <div class="form-group">
+                     <label for="bgUrlInput">Image de fond personnalisé (URL) :</label>
+                     <input type="text" id="bgUrlInput" class="form-control" placeholder="https://exemple.com/image.jpg" style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid rgba(255, 215, 0, 0.3);">
+                  </div>
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #334155; border: none;">Fermer</button>
+                  <button type="button" class="btn btn-primary" onclick="saveSettings()" style="background: linear-gradient(135deg, #ffd700 0%, #ffae00 100%); color: #000; font-weight: bold; border: none;">Enregistrer</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+         <p>&copy; 2026 <span>Minato Bot</span>. Tous droits réservés.</p>
+         <p>Développé avec <i class="fas fa-bolt" style="color: var(--yellow-glow);"></i> par <span>chrisst95</span></p>
+      </footer>
+
+      <!-- Scripts JS -->
+      <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
       <script>
          async function listOfAi() {
              const userOnline = document.getElementById("user_online");
@@ -287,65 +421,58 @@
                  const response = await fetch("/info");
                  const data = await response.json();
                  userOnline.innerHTML = '';
-                 
-                 if (data.length === 0) {
-                     userOnline.innerHTML = `<div class="col-12 text-center text-muted p-4"><i class="fa-solid fa-circle-info mr-2"></i> Aucun bot n'est actuellement connecté.</div>`;
+
+                 if (!data || data.length === 0) {
+                     userOnline.innerHTML = `<div class="col-12 text-center text-muted"><p>Aucun utilisateur connecté pour le moment.</p></div>`;
                      return;
                  }
 
                  data.forEach(user => {
-                     const {
-                         name,
-                         thumbSrc,
-                         profileUrl,
-                         time,
-                     } = user;
-
+                     const { name, thumbSrc, profileUrl, time } = user;
+                     
                      const userCard = document.createElement('div');
-                     userCard.className = 'col-12 user-card mb-3';
-
+                     userCard.className = 'col-12 user-card';
+                     
                      const image = document.createElement('img');
-                     image.src = thumbSrc;
-                     image.alt = 'Avatar Utilisateur';
-                     image.onerror = function() {
-                         this.src = 'https://i.ibb.co/3mS6H24/minato-profile.jpg';
-                     };
-
+                     image.src = thumbSrc || 'https://i.imgur.com/N1wGBYF.jpeg';
+                     image.alt = 'Vignette Utilisateur';
+                     
                      const userInfo = document.createElement('div');
                      userInfo.className = 'user-info';
-
+                     
                      const userName = document.createElement('h4');
                      userName.textContent = name;
-
+                     
                      const profileLink = document.createElement('p');
-                     profileLink.innerHTML = `<i class="fa-solid fa-link mr-1"></i> <a href="${profileUrl}" target="_blank">${profileUrl}</a>`;
-
-                     const uptimeUser = document.createElement('p');
-                     uptimeUser.className = 'uptime-user';
-                     uptimeUser.innerHTML = `Temps d'activité : ${timeFormat(time)}`;
-
+                     profileLink.innerHTML = `<a href="${profileUrl}" target="_blank"><i class="fa-solid fa-link"></i> Voir le profil Facebook</a>`;
+                     
+                     const uptimeUser = document.createElement('div');
+                     uptimeUser.className = 'uptime-badge uptime-user';
+                     uptimeUser.innerHTML = `<i class="fa-regular fa-clock"></i> Temps en ligne: ${timeFormat(time)}`;
+                     
                      userInfo.appendChild(userName);
                      userInfo.appendChild(profileLink);
                      userInfo.appendChild(uptimeUser);
+                     
                      userCard.appendChild(image);
                      userCard.appendChild(userInfo);
                      userOnline.appendChild(userCard);
 
-                     const intervalId = setInterval(() => {
+                     setInterval(() => {
                          user.time++;
                          updateTimer(userCard, user.time);
                      }, 1000); 
                  });
              } catch (error) {
                  console.error(error);
-                 userOnline.innerHTML = `<div class="alert alert-danger w-100 text-center" role="alert"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Une erreur est survenue lors de la récupération des données.</div>`;
+                 userOnline.innerHTML = `<div class="col-12 alert alert-danger text-center" role="alert">Une erreur est survenue lors de la récupération des données.</div>`;
              }
          }
          
          function updateTimer(userCard, currentTime) {
              const uptimeUser = userCard.querySelector('.uptime-user');
              if (uptimeUser) {
-                 uptimeUser.innerHTML = `Temps d'activité : ${timeFormat(currentTime)}`;
+                 uptimeUser.innerHTML = `<i class="fa-regular fa-clock"></i> Temps en ligne: ${timeFormat(currentTime)}`;
              }
          }
          
@@ -356,20 +483,24 @@
              const seconds = currentTime % 60;
 
              let formatted = '';
+             if (days > 0) formatted += `${days}j `;
+             if (hours > 0) formatted += `${hours}h `;
+             if (minutes > 0) formatted += `${minutes}m `;
+             formatted += `${seconds}s`;
 
-             if (days > 0) formatted += `${days} j `;
-             if (hours > 0) formatted += `${hours} h `;
-             if (minutes > 0) formatted += `${minutes} m `;
-             formatted += `${seconds} s`;
+             return formatted;
+         }
 
-             return formatted.trim();
+         function saveSettings() {
+             const bgUrl = document.getElementById('bgUrlInput').value.trim();
+             if (bgUrl) {
+                 document.body.style.setProperty('--custom-bg', `url('${bgUrl}')`);
+             }
+             $('#settingsModal').modal('hide');
          }
 
          listOfAi();
       </script>
-
-      <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
    </body>
-</html>
+         </html>
+       
