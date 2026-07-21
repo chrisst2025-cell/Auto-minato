@@ -2,14 +2,26 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
+const smallCapsMap = {
+  a:'ᴀ', b:'ʙ', c:'ᴄ', d:'ᴅ', e:'ᴇ', f:'ꜰ',
+  g:'ɢ', h:'ʜ', i:'ɪ', j:'ᴊ', k:'ᴋ', l:'ʟ',
+  m:'ᴍ', n:'ɴ', o:'ᴏ', p:'ᴘ', q:'ǫ', r:'ʀ',
+  s:'ꜱ', t:'ᴛ', u:'ᴜ', v:'ᴠ', w:'ᴡ', x:'x',
+  y:'ʏ', z:'ᴢ'
+};
+
+const toSmallCaps = t =>
+  (t || "").toLowerCase().split("").map(c => smallCapsMap[c] || c).join("");
+
 module.exports.config = {
 	name: "sendnoti",
 	version: "1.1.0",
 	role: 2,
-	description: "Sends a message to all groups and can only be done by the admin.",
+	description: "Envoie une notification à tous les groupes (Réservé aux admins).",
+	credits: "Chris st",
 	hasPrefix: false,
 	aliases: ["noti"],
-	usages: "[Text]",
+	usages: "[Texte]",
 	cooldown: 0,
 };
 
@@ -18,10 +30,18 @@ module.exports.run = async function ({ api, event, args, admin }) {
 	let sentCount = 0;
 	const custom = args.join(" ");
 
+	if (!custom) {
+		return api.sendMessage(
+			toSmallCaps("Veuillez entrer un message à envoyer."),
+			event.threadID,
+			event.messageID
+		);
+	}
+
 	async function sendMessage(thread) {
 		try {
 			await api.sendMessage(
-`𝗘𝗱𝘂𝗰𝗮𝘁𝗶𝗼𝗻𝗮𝗹 𝗯𝗼𝘁 [🌐]\n━━━━━━━━━━━\n [${custom}]\n⚘⊰♔⊱⊰⊹⊱♡⊰⊹⊱♡⊰⊹⊱♡⊰⊹\n〉𝗡𝗲𝘄 𝗩𝗲𝗿𝘀𝗶𝗼𝗻 2.0.1`,
+`minato namikaze [🌐]\n━━━━━━━━━━━\n [${custom}]\n⚘⊰♔⊱⊰⊹⊱♡⊰⊹⊱♡⊰⊹⊱♡⊰⊹\n〉`,
 				thread.threadID
 			);
 			sentCount++;
@@ -54,11 +74,16 @@ module.exports.run = async function ({ api, event, args, admin }) {
 	}
 
 	if (sentCount > 0) {
-		api.sendMessage(`› Sent the notification successfully.`, event.threadID);
+		api.sendMessage(
+			toSmallCaps("Notification envoyée avec succès."),
+			event.threadID,
+			event.messageID
+		);
 	} else {
 		api.sendMessage(
-			"› No eligible group threads found to send the message to.",
-			event.threadID
+			toSmallCaps("Aucun groupe éligible trouvé pour envoyer le message."),
+			event.threadID,
+			event.messageID
 		);
 	}
 };
