@@ -4,8 +4,8 @@ module.exports.config = {
   name: "allmember",
   version: "1.0.1",
   role: 0,
-  credits: "joshua",
-  description: "Count all members in the current group chat, display their names, and optionally include the group's name and picture.",
+  credits: "Chris st",
+  description: "Compte tous les membres du groupe actuel, affiche leurs noms et éventuellement le nom et l'image du groupe.",
   commandCategory: "Group Chat",
   usages: "",
   cooldowns: 0,
@@ -14,37 +14,31 @@ module.exports.config = {
 
 module.exports.run = async function({ api, event, args }) {
   try {
-    // Get the current group chat information
+    // Obtenir les informations du groupe actuel
     const groupInfo = await api.getThreadInfo(event.threadID);
 
     if (!groupInfo) {
-      api.sendMessage('Invalid group chat. Please try again later.', event.threadID);
+      api.sendMessage("𝙶𝚛𝚘𝚞𝚙𝚎 𝚒𝚗𝚟𝚊𝚕𝚒𝚍𝚎. 𝚅𝚎𝚞𝚒𝚕𝚕𝚎𝚣 𝚛𝚎́𝚎𝚜𝚜𝚊𝚢𝚎𝚛 𝚙𝚕𝚞𝚜 𝚝𝚊𝚛𝚍.", event.threadID, event.messageID);
       return;
     }
 
-    // Count the number of members in the group chat
+    // Compter le nombre de membres
     const memberCount = groupInfo.participantIDs.length;
 
-    // Get the names of all members in the group chat
-    const memberNames = [];
-    for (const participantID of groupInfo.participantIDs) {
-      const participantInfo = await api.getUserInfo(participantID);
-      if (participantInfo) {
-        memberNames.push(participantInfo.name);
-      }
-    }
-
-    // Optionally, get the group's picture
+    // Obtenir l'image du groupe si elle existe
     let groupPicture;
     if (groupInfo.imageSrc) {
       groupPicture = groupInfo.imageSrc;
     }
 
-    // Send the result to the user
-    const message = `Group Chat: ${groupInfo.threadName}\n\nMember Count: ${memberCount}${groupPicture ? `\nGroup Picture: ${groupPicture}` : ''}`;
-    api.sendMessage(message, event.threadID);
+    // Préparer le message avec la police Monospace
+    const groupName = groupInfo.threadName || "𝚂𝚊𝚗𝚜 𝚗𝚘𝚖";
+    const message = `𝙽𝚘𝚖 𝚍𝚞 𝚐𝚛𝚘𝚞𝚙𝚎 : ${groupName}\n\n𝙽𝚘𝚖𝚋𝚛𝚎 𝚍𝚎 𝚖𝚎𝚖𝚋𝚛𝚎𝚜 : ${memberCount}${groupPicture ? `\n𝙸𝚖𝚊𝚐𝚎 𝚍𝚞 𝚐𝚛𝚘𝚞𝚙𝚎 : ${groupPicture}` : ''}`;
+    
+    api.sendMessage(message, event.threadID, event.messageID);
+
   } catch (error) {
-    console.error("Error counting group chat members", error);
-    api.sendMessage('An error occurred while counting the group chat members.\nPlease try again later.', event.threadID);
+    console.error("Erreur lors du comptage des membres du groupe :", error);
+    api.sendMessage("𝚄𝚗𝚎 𝚎𝚛𝚛𝚎𝚞𝚛 𝚎𝚜𝚝 𝚜𝚞𝚛𝚟𝚎𝚗𝚞𝚎 𝚕𝚘𝚛𝚜 𝚍𝚞 𝚌𝚘𝚖𝚙𝚝𝚊𝚐𝚎 𝚍𝚎𝚜 𝚖𝚎𝚖𝚋𝚛𝚎𝚜.\n𝚅𝚎𝚞𝚒𝚕𝚕𝚎𝚣 𝚛𝚎́𝚎𝚜𝚜𝚊𝚢𝚎𝚛 𝚙𝚕𝚞𝚜 𝚝𝚊𝚛𝚍.", event.threadID, event.messageID);
   }
 };
