@@ -1,84 +1,280 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
    <head>
-      <title>Step-By-Step Guide</title>
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+      <meta charset="UTF-8">
+      <title>Guide Étape par Étape - Minato Bot</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="styles.css">
+      <!-- Feuilles de style -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;500;600;700&display=swap">
+      <style>
+        :root {
+            --minato-yellow: #facc15;
+            --minato-gold: #eab308;
+            --minato-orange: #f97316;
+            --rasengan-blue: #06b6d4;
+            --dark-bg: rgba(10, 15, 30, 0.82);
+            --glass-bg: rgba(18, 25, 45, 0.72);
+            --border-glow: rgba(250, 204, 21, 0.4);
+            --text-color: #f8fafc;
+            --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #090d16 0%, #111827 50%, #030712 100%), 
+                        url('https://images.alphacoders.com/605/605592.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Effet d'éclairs animés en arrière-plan */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 20%, rgba(250, 204, 21, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulseGlow 6s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        /* Barre de défilement personnalisée */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--minato-yellow), var(--minato-orange));
+            border-radius: 5px;
+            box-shadow: 0 0 10px var(--minato-yellow);
+        }
+
+        /* Barre de navigation */
+        .navbar {
+            background: rgba(10, 15, 30, 0.85) !important;
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--border-glow);
+            box-shadow: 0 4px 25px rgba(250, 204, 21, 0.15);
+            padding: 0.8rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--minato-yellow) !important;
+            font-size: 1.4rem;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem !important;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover, .nav-item.active .nav-link {
+            color: var(--minato-yellow) !important;
+            background: rgba(250, 204, 21, 0.1);
+            text-shadow: 0 0 8px var(--minato-yellow);
+        }
+
+        /* Conteneur principal Glassmorphism */
+        .container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glow);
+            border-radius: 18px;
+            padding: 2rem;
+            margin: 1.8rem auto;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            transition: var(--transition);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .container:hover {
+            border-color: var(--minato-yellow);
+            box-shadow: 0 12px 40px rgba(250, 204, 21, 0.25);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--minato-yellow);
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+        }
+
+        p {
+            color: #e2e8f0;
+            font-size: 1rem;
+            margin-top: 15px;
+        }
+
+        a {
+            color: var(--rasengan-blue);
+            word-break: break-all;
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--minato-yellow);
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--rasengan-blue);
+        }
+
+        /* Styling des images du guide avec effet néon et survol */
+        .guide-img {
+            display: block;
+            margin: 15px auto;
+            border-radius: 12px;
+            border: 2px solid var(--border-glow);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            transition: var(--transition);
+            max-width: 100%;
+            height: auto;
+        }
+
+        .guide-img:hover {
+            transform: scale(1.03);
+            border-color: var(--minato-yellow);
+            box-shadow: 0 0 25px rgba(250, 204, 21, 0.5);
+        }
+
+        /* Animations Keyframes */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1.2rem; margin: 1rem; }
+            .navbar-collapse { margin-right: 0 !important; }
+        }
+      </style>
    </head>
    <body>
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-         <a class="navbar-brand" href="#">Step-By-Step Guide </a>
-         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-         <span class="navbar-toggler-icon"></span>
+      <!-- Barre de navigation -->
+      <nav class="navbar navbar-expand-lg">
+         <a class="navbar-brand" href="#">
+            <i class="fa-solid fa-book-bookmark"></i> Guide Étape par Étape
+         </a>
+         <button class="navbar-toggler text-white" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Basculer la navigation">
+            <i class="fa-solid fa-bars" style="color: var(--minato-yellow);"></i>
          </button>
-         <div class="collapse navbar-collapse justify-content-end" id="navbarNav" style="margin-right: 70px;">
+         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
                <li class="nav-item active">
-                  <a class="nav-link" href="#">Step-By-Step Guide <span class="sr-only">(current)</span>
-                  </a>
+                  <a class="nav-link" href="#"><i class="fa-solid fa-book"></i> Guide <span class="sr-only">(actuel)</span></a>
                </li>
                <li class="nav-item">
-                  <a class="nav-link" href="/">Home</a>
+                  <a class="nav-link" href="/"><i class="fa-solid fa-house"></i> Accueil</a>
                </li>
                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Features </a>
-                  <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                     <a class="dropdown-item" href="#">Cookies Extractor</a>
-                     <div class="dropdown-divider"></div>
-                     <a class="dropdown-item" href="/step_by_step_guide">Step-By-Step Guide</a>
+                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                     <i class="fa-solid fa-sliders"></i> Fonctionnalités
+                  </a>
+                  <div class="dropdown-menu bg-dark text-white border-warning" aria-labelledby="navbarDropdown">
+                     <a class="dropdown-item text-warning" href="#"><i class="fa-solid fa-cookie"></i> Extracteur de Cookies</a>
+                     <div class="dropdown-divider border-secondary"></div>
+                     <a class="dropdown-item text-white" href="/step_by_step_guide"><i class="fa-solid fa-book"></i> Guide Étape par Étape</a>
                   </div>
                </li>
                <li class="nav-item">
-                  <a class="nav-link" href="online_user">Active</a>
+                  <a class="nav-link" href="online_user"><i class="fa-solid fa-users"></i> En Ligne</a>
                </li>
             </ul>
          </div>
       </nav>
+
+      <!-- Contenu du Guide -->
       <div class="container">
-         <h1 class="col text-center" style="font-size: 20px; padding: 10px;">Step-By-Step Guide</h1>
-         <p>1. Install the Kiwi Browser from the Google Play Store and proceed to launch the application.</p>
-         <img src="image/guide_1.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>2. Upon launching the app, navigate to the search function and enter the following link: <a href="https://github.com/c3cbot/c3c-fbstate/archive/refs/tags/1.5.zip">https://github.com/c3cbot/c3c-fbstate/archive/refs/tags/1.5.zip</a></p>
-         <img src="image/guide_2.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>3. Once entered, a prompt will appear instructing you to download the file; proceed by clicking the download option.</p>
-         <img src="image/guide_3.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>4. After completing the download, tap the three dots in the upper-right corner, then select the "Extensions" option.</p>
-         <img src="image/guide_4.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>5. In the Extensions menu, enable Developer Mode, then click the "+" button to add the extension from either a zip file, crx file, or user.js file.</p>
-         <img src="image/guide_5.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>6. Locate the previously downloaded zip file and click on it to initiate the installation process.</p>
-         <img src="image/guide_6.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>7. Once the installation is complete, observe the C3C fbstate utility in the bottom-right corner and activate it by clicking on it.</p>
-         <img src="image/guide_7.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>8. Upon activation, navigate to Facebook.com using the Kiwi Browser and log in your account.</p>
-         <img src="image/guide_8.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>9. After logging in, access the menu by clicking the three dots in the upper right corner, scroll down, and locate the C3C fbstate utility.</p>
-         <img src="image/guide_9.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>10. You'll be redirected to another page; locate the "Copy Clipboard" option and click it to copy your cookies for further use.</p>
-         <img src="image/guide_10.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>11. Paste your copied cookies at <a href="https://auto-bot-soyeon.onrender.com">https://kensei-gmcf.onrender.com</a>, then scroll down to thoroughly review the Terms and Conditions and Privacy Policy.</p>
-         <img src="image/guide_11.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>12. Finally, having carefully reviewed the Terms and Conditions and Privacy Policy, check the box to confirm your understanding and submit the information.</p>
-         <img src="image/guide_12.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
-         <p>13. Certainly, please input "ai" to confirm the bot's operational status. If it responds, congratulations on successful verification.</p>
-         <img src="image/guide_13.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
+         <h1 class="col text-center" style="font-size: 22px; padding: 10px;">
+            <i class="fa-solid fa-list-check"></i> Guide d'Installation Étape par Étape
+         </h1>
+
+         <p>1. Installez l'application <strong>Kiwi Browser</strong> depuis le Google Play Store puis lancez l'application.</p>
+         <img src="image/guide_1.jpeg" alt="Étape 1" width="300" height="200" class="guide-img">
+
+         <p>2. Dès le lancement de l'application, accédez à la barre de recherche et entrez le lien suivant : <a href="https://github.com/c3cbot/c3c-fbstate/archive/refs/tags/1.5.zip" target="_blank">https://github.com/c3cbot/c3c-fbstate/archive/refs/tags/1.5.zip</a></p>
+         <img src="image/guide_2.jpeg" alt="Étape 2" width="300" height="200" class="guide-img">
+
+         <p>3. Une fois entré, une boîte de dialogue s'affichera vous invitant à télécharger le fichier ; poursuivez en cliquant sur l'option de téléchargement.</p>
+         <img src="image/guide_3.jpeg" alt="Étape 3" width="300" height="200" class="guide-img">
+
+         <p>4. Une fois le téléchargement terminé, appuyez sur les trois points dans le coin supérieur droit, puis sélectionnez l'option <strong>"Extensions"</strong>.</p>
+         <img src="image/guide_4.jpeg" alt="Étape 4" width="300" height="200" class="guide-img">
+
+         <p>5. Dans le menu Extensions, activez le <strong>Mode Développeur</strong>, puis cliquez sur le bouton <strong>"+"</strong> pour ajouter l'extension depuis un fichier zip, crx ou user.js.</p>
+         <img src="image/guide_5.jpeg" alt="Étape 5" width="300" height="200" class="guide-img">
+
+         <p>6. Localisez le fichier zip précédemment téléchargé et cliquez dessus pour lancer le processus d'installation.</p>
+         <img src="image/guide_6.jpeg" alt="Étape 6" width="300" height="200" class="guide-img">
+
+         <p>7. Une fois l'installation terminée, observez l'utilitaire C3C fbstate dans le coin inférieur droit et activez-le en cliquant dessus.</p>
+         <img src="image/guide_7.jpeg" alt="Étape 7" width="300" height="200" class="guide-img">
+
+         <p>8. Après l'activation, rendez-vous sur Facebook.com à l'aide du navigateur Kiwi Browser et connectez-vous à votre compte.</p>
+         <img src="image/guide_8.jpeg" alt="Étape 8" width="300" height="200" class="guide-img">
+
+         <p>9. Après vous être connecté, accédez au menu en cliquant sur les trois points dans le coin supérieur droit, faites défiler vers le bas et localisez l'utilitaire C3C fbstate.</p>
+         <img src="image/guide_9.jpeg" alt="Étape 9" width="300" height="200" class="guide-img">
+
+         <p>10. Vous serez redirigé vers une autre page ; localisez l'option <strong>"Copy Clipboard"</strong> et cliquez dessus pour copier vos cookies en vue d'une utilisation ultérieure.</p>
+         <img src="image/guide_10.jpeg" alt="Étape 10" width="300" height="200" class="guide-img">
+
+         <p>11. Collez vos cookies copiés sur <a href="https://kensei-gmcf.onrender.com" target="_blank">https://kensei-gmcf.onrender.com</a>, puis faites défiler vers le bas pour lire attentivement les Conditions d'Utilisation et la Politique de Confidentialité.</p>
+         <img src="image/guide_11.jpeg" alt="Étape 11" width="300" height="200" class="guide-img">
+
+         <p>12. Enfin, après avoir attentivement lu les Conditions d'Utilisation et la Politique de Confidentialité, cochez la case pour confirmer votre acceptation puis soumettez les informations.</p>
+         <img src="image/guide_12.jpeg" alt="Étape 12" width="300" height="200" class="guide-img">
+
+         <p>13. Pour vérifier, veuillez envoyer "ai" afin de confirmer le statut opérationnel du bot. S'il répond, félicitations pour la vérification réussie !</p>
+         <img src="image/guide_13.jpeg" alt="Étape 13" width="300" height="200" class="guide-img">
+
          <br>
-         <h1 class="col text-center" style="font-size: 20px;">Note:</h1>
-         <p>• In case the bot encounters a login issue during the initial log, it may be due to a lock. Simply unlock it and repeat the process.</p>
-         <p>• If the bot is already logged into Facebook/FB Lite, refrain from logging in on other devices or initiating a logout.</p>
-         <p>• While the bot is active, avoid logging into the bot account or changing the password.</p>
-         <p>• Please be aware that there is a possibility of encountering account locks or suspensions, and we are not responsible for such occurrences.</p>
-         <p>• Please be aware that there is a possibility of encountering account locks or suspensions, and we are not responsible for such occurrences.</p>
-         <p> To register another bot/Al, simply tap on "logout" (not die appstate) to acquire a new appstate for another account.</p>
-         <img src="image/guide_16.jpeg" alt="" width="300" height="200" style="display: block; margin: auto; border-radius: 10px; margin: 10px auto;">
+         <h1 class="col text-center" style="font-size: 20px; margin-top: 20px;">
+            <i class="fa-solid fa-triangle-exclamation text-warning"></i> Remarques Importantes :
+         </h1>
+         <p>• Si le bot rencontre un problème de connexion lors du premier essai, cela peut être dû à un verrouillage de sécurité. Déverrouillez simplement votre compte et répétez le processus.</p>
+         <p>• Si le bot est déjà connecté sur Facebook/FB Lite, évitez de vous connecter sur d'autres appareils ou d'effectuer une déconnexion.</p>
+         <p>• Pendant que le bot est actif, évitez de vous connecter au compte du bot ou de modifier le mot de passe.</p>
+         <p>• Veuillez noter qu'il existe un risque de verrouillage ou de suspension de compte, et nous déclinons toute responsabilité en cas de survenance.</p>
+         <p>• Pour enregistrer un autre bot/IA, appuyez simplement sur "logout" (ne fermez pas l'appstate) pour obtenir un nouvel appstate pour un autre compte.</p>
+         <img src="image/guide_16.jpeg" alt="Remarque" width="300" height="200" class="guide-img">
       </div>
-      </div>
+
+      <!-- Scripts JS -->
       <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
    </body>
-</html>
+   </html>
+ 
