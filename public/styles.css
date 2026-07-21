@@ -1,81 +1,69 @@
 /* ==========================================================================
-   Minato Namikaze Bot Theme - styles.css
+   Variables thématiques - Minato Namikaze (L'Éclair Jaune)
    ========================================================================== */
-
 :root {
-    --minato-yellow: #facc15;
-    --minato-gold: #eab308;
-    --minato-orange: #f97316;
-    --rasengan-blue: #06b6d4;
-    --dark-bg: rgba(10, 15, 30, 0.85);
-    --glass-bg: rgba(18, 25, 45, 0.72);
-    --border-glow: rgba(250, 204, 21, 0.4);
-    --text-color: #f8fafc;
-    --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --yellow-glow: #ffd700;
+    --yellow-accent: #ffae00;
+    --cyan-glow: #00f0ff;
+    --dark-bg: #0b0e14;
+    --card-bg: rgba(18, 24, 38, 0.85);
+    --text-color: #e2e8f0;
+    --border-glow: rgba(255, 215, 0, 0.4);
+    --shadow-yellow: 0 0 20px rgba(255, 215, 0, 0.35);
+    --transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-* {
-    box-sizing: border-box;
-}
-
-/* --- Style Général du Corps --- */
+/* Base Body Style */
 body {
     margin: 0;
     padding: 20px;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Rajdhani', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text-color);
+    background: linear-gradient(135deg, #07090e 0%, #0f172a 100%);
+    background-image: var(--custom-bg, radial-gradient(circle at 50% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 60%));
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
-    overflow-y: auto;
-
-    /* Arrière-plan thématique Minato avec overlay sombre */
-    background: linear-gradient(135deg, rgba(9, 13, 22, 0.9) 0%, rgba(17, 24, 39, 0.85) 50%, rgba(3, 7, 18, 0.95) 100%), 
-                url('https://images.alphacoders.com/605/605592.png') no-repeat center center fixed;
-    background-size: cover;
-    background-attachment: fixed;
-    position: relative;
 }
 
-/* Aura animée d'éclairs en arrière-plan */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(circle at 50% 20%, rgba(250, 204, 21, 0.08) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-    animation: pulseGlow 6s infinite alternate;
-}
-
-@keyframes pulseGlow {
-    0% { opacity: 0.4; }
-    100% { opacity: 1; }
-}
-
-/* --- Barre de Défilement --- */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 10px;
+    width: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.8);
+    background: #090d14;
 }
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--minato-yellow), var(--minato-orange));
-    border-radius: 5px;
-    box-shadow: 0 0 10px var(--minato-yellow);
+    background: var(--yellow-accent);
+    border-radius: 4px;
+    box-shadow: 0 0 10px var(--yellow-accent);
 }
 
-/* --- Animation Vague (Wave) Style Minato --- */
+/* Animations */
+@keyframes yellowPulse {
+    0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.7); }
+    100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+}
+
+@keyframes textGlow {
+    0%, 100% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
+    50% { text-shadow: 0 0 18px rgba(255, 215, 0, 0.9), 0 0 28px rgba(0, 240, 255, 0.6); }
+}
+
+/* Effet de vague en bas de page */
 .wave {
-    background: rgba(250, 204, 21, 0.15);
+    background: rgba(255, 215, 0, 0.15);
     border-radius: 1000% 1000% 0 0;
     position: fixed;
     width: 200%;
     height: 12em;
     animation: wave 10s -3s linear infinite;
     transform: translate3d(0, 0, 0);
-    opacity: 0.7;
+    opacity: 0.6;
     bottom: 0;
     left: 0;
     z-index: -1;
@@ -83,99 +71,85 @@ body::before {
 
 .wave:nth-of-type(2) {
     bottom: -1.25em;
-    background: rgba(6, 182, 212, 0.15);
     animation: wave 18s linear reverse infinite;
-    opacity: 0.8;
+    opacity: 0.5;
 }
 
 .wave:nth-of-type(3) {
     bottom: -2.5em;
-    background: rgba(249, 115, 22, 0.1);
     animation: wave 20s -1s reverse infinite;
-    opacity: 0.9;
+    opacity: 0.7;
 }
 
 @keyframes wave {
-    0% { transform: translateX(0); }
+    2% { transform: translateX(1px); }
     25% { transform: translateX(-25%); }
     50% { transform: translateX(-50%); }
     75% { transform: translateX(-25%); }
-    100% { transform: translateX(0); }
+    100% { transform: translateX(1px); }
 }
 
-/* --- Conteneurs & Cartes (Glassmorphism) --- */
+/* Containers */
 .container {
     color: var(--text-color);
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 18px;
-    padding: 2rem;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-radius: 14px;
+    padding: 25px;
+    border: 1px solid var(--border-glow);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 15px rgba(255, 215, 0, 0.15);
     margin-top: 20px;
     margin-bottom: 20px;
-    border: 1px solid var(--border-glow);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5),
-                0 0 15px rgba(250, 204, 21, 0.15);
-    outline: none;
     transition: var(--transition);
 }
 
 .container:hover {
-    border-color: var(--minato-yellow);
-    box-shadow: 0 12px 40px rgba(250, 204, 21, 0.25),
-                inset 0 0 15px rgba(250, 204, 21, 0.1);
+    border-color: var(--yellow-glow);
+    box-shadow: var(--shadow-yellow);
 }
 
-div {
-    margin-bottom: 10px;
-    border-radius: 8px;
-}
-
-/* --- Titres & Éléments de texte --- */
+/* Titres */
 h1 {
     font-family: 'Orbitron', sans-serif;
-    color: var(--minato-yellow);
-    font-size: 1.5rem;
+    color: var(--yellow-glow) !important;
+    font-size: 24px;
     font-weight: 700;
+    letter-spacing: 1.5px;
     margin-bottom: 15px;
-    text-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
-    letter-spacing: 0.5px;
+    animation: textGlow 3s infinite ease-in-out;
 }
 
 label {
-    background-color: rgba(250, 204, 21, 0.1);
-    color: var(--minato-yellow);
-    border: 1px solid var(--border-glow);
-    border-radius: 8px;
-    font-weight: 600;
-    padding: 6px 12px;
-    margin-bottom: 8px;
     display: inline-block;
+    color: var(--yellow-glow);
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
 }
 
-/* --- Zones de Saisie & Textareas --- */
-.centered-textarea, 
+/* Inputs & Textareas */
+.centered-textarea,
 textarea.form-control {
-    color: #ffffff !important;
-    background: rgba(15, 23, 42, 0.85) !important;
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.85);
     display: flex;
     margin: 0 auto;
     width: 100%;
-    min-height: 150px;
-    padding: 12px 15px;
+    min-height: 140px;
+    padding: 12px;
     box-sizing: border-box;
-    border: 2px solid rgba(250, 204, 21, 0.25) !important;
-    border-radius: 12px !important;
+    border: 1.5px solid var(--border-glow);
+    border-radius: 8px;
     resize: vertical;
     transition: var(--transition);
-    font-family: monospace, 'Poppins', sans-serif;
 }
 
-.centered-textarea:focus, 
+.centered-textarea:focus,
 textarea.form-control:focus {
-    border-color: var(--minato-yellow) !important;
-    box-shadow: 0 0 20px rgba(250, 204, 21, 0.4) !important;
     outline: none;
+    background: rgba(15, 23, 42, 0.95);
+    border-color: var(--yellow-glow);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
 #inputOfPrefix, 
@@ -183,21 +157,20 @@ textarea.form-control:focus {
 #inputOfBotName {
     padding: 12px 16px;
     width: 100%;
-    max-width: 400px;
-    border: 2px solid rgba(250, 204, 21, 0.2);
-    border-radius: 10px;
-    cursor: text;
-    transition: var(--transition);
+    max-width: 320px;
+    border: 1.5px solid var(--border-glow);
+    border-radius: 8px;
     background-color: rgba(15, 23, 42, 0.85);
-    color: #ffffff;
+    color: #fff;
+    transition: var(--transition);
 }
 
 #inputOfPrefix:focus, 
 #inputOfAdmin:focus,
 #inputOfBotName:focus {
-    border-color: var(--minato-yellow);
-    box-shadow: 0 0 15px rgba(250, 204, 21, 0.4);
     outline: none;
+    border-color: var(--yellow-glow);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
 }
 
 .center-placeholder::placeholder {
@@ -205,43 +178,124 @@ textarea.form-control:focus {
     color: #94a3b8;
 }
 
-/* --- Boutons --- */
-.btn-primary {
-    background: linear-gradient(135deg, var(--minato-yellow) 0%, var(--minato-orange) 100%);
-    border: none;
-    color: #0f172a !important;
-    font-weight: 700;
-    padding: 10px 24px;
-    border-radius: 10px;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(250, 204, 21, 0.3);
+/* Checkboxes & Form-Check */
+.form-check {
+    display: flex;
+    margin-top: 10px;
+    padding: 14px;
+    align-items: center;
+    border: 1px solid var(--border-glow);
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: rgba(15, 23, 42, 0.6);
     transition: var(--transition);
+}
+
+.form-check:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+    border-color: var(--yellow-glow);
+}
+
+.form-check-input {
+    margin-right: 12px;
+    accent-color: var(--yellow-glow);
+    width: 18px;
+    height: 18px;
     cursor: pointer;
 }
 
-.btn-primary:hover {
-    background: linear-gradient(135deg, #fde047 0%, #fb923c 100%);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 6px 25px rgba(250, 204, 21, 0.6);
-    color: #000000 !important;
+/* Boutons */
+.btn-primary {
+    background: linear-gradient(135deg, #ffae00 0%, #e67e22 100%);
+    border: none;
+    color: #000;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(255, 174, 0, 0.4);
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ffd700 0%, #ffae00 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+    color: #000;
 }
 
 #button12 {
-    background-color: rgba(15, 23, 42, 0.6);
-    color: var(--minato-yellow);
-    border: 1px solid var(--border-glow);
-    border-radius: 10px;
+    background-color: transparent;
+    color: var(--yellow-glow);
+    border: 1.5px solid var(--yellow-glow);
+    border-radius: 8px;
     padding: 12px 24px;
     margin: 10px;
+    font-family: 'Orbitron', sans-serif;
     font-weight: 600;
     transition: var(--transition);
-    cursor: pointer;
 }
 
 #button12:hover {
-    background-color: var(--minato-yellow);
-    color: #0f172a;
-    box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+    background-color: var(--yellow-glow);
+    color: #000;
+    box-shadow: 0 0 15px var(--yellow-glow);
+}
+
+/* Messages & Résultats */
+.success-message {
+    color: #4ade80;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+#result {
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--border-glow);
+}
+
+/* Footer Styling */
+.footer {
+    background: rgba(7, 9, 14, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px;
+    text-align: center;
+    font-size: 15px;
+    color: #94a3b8;
+    margin-top: 40px;
+    border-top: 1px solid var(--border-glow);
+    position: relative;
+    width: 100%;
+}
+
+.footer p {
+    margin: 0;
+    display: inline-block;
+}
+
+/* Utilitaires */
+.disable {
+    display: none !important;
+}
+
+#listOfCommands, 
+#listOfCommandsEvent, 
+#prefixOfCommands, 
+#adminOfCommands {
+    border: none !important;
+}
+
+#listOfCommands:not(.modal), 
+#listOfCommandsEvent:not(.modal), 
+#prefixOfCommands:not(.modal),
+#adminOfCommands:not(.modal) {
+    box-shadow: none !important;
+    background: transparent;
 }
 
 .container-buttons {
@@ -252,96 +306,3 @@ textarea.form-control:focus {
 .container-buttons .btn {
     margin: 5px;
 }
-
-/* --- Cases à cocher (Commandes & Événements) --- */
-.form-check {
-    display: flex;
-    margin-top: 8px;
-    padding: 12px 18px;
-    align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: var(--transition); 
-    background-color: rgba(15, 23, 42, 0.6);
-    color: #e2e8f0;
-}
-
-.form-check:hover {
-    background-color: rgba(250, 204, 21, 0.15); 
-    border-color: var(--minato-yellow); 
-    transform: translateX(5px);
-}
-
-.form-check-input {
-    margin-right: 12px; 
-    opacity: 1;
-    width: 18px;
-    height: 18px;
-    accent-color: var(--minato-yellow);
-    cursor: pointer;
-}
-
-.disable {
-    display: none;
-}
-
-/* Nettoyage des bordures/ombres pour les sections spécifiques */
-#listOfCommands, #listOfCommandsEvent, #prefixOfCommands, #adminOfCommands {
-    border: none !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-}
-
-#listOfCommands:not(.modal), 
-#listOfCommandsEvent:not(.modal), 
-#prefixOfCommands:not(.modal),
-#adminOfCommands:not(.modal) {
-    box-shadow: none !important;
-}
-
-/* --- Messages de statut & Résultats --- */
-.success-message {
-    color: #22c55e;
-    font-weight: 600;
-    margin-top: 10px;
-    text-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
-}
-
-#result {
-    padding: 15px;
-    margin-top: 20px;
-    border-radius: 12px;
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid var(--border-glow);
-}
-
-/* --- Pied de page (Footer) --- */
-.footer {
-    background: rgba(10, 15, 30, 0.95);
-    backdrop-filter: blur(12px);
-    border-top: 2px solid var(--border-glow);
-    padding: 12px 20px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #94a3b8;
-    margin-top: 50px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 999;
-}
-
-.footer p {
-    margin: 0;
-    display: inline-block;
-    margin-right: 20px;
-    color: #cbd5e1;
-}
-
-.footer p span {
-    color: var(--minato-yellow);
-    font-weight: 600;
-	}
-	
