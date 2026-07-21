@@ -4,7 +4,7 @@ module.exports.config = {
   role: 2,
   hasPrefix: true,
   credits: "Developer",
-  description: "Bot leaves the thread",
+  description: "minato leaves the thread",
   usages: "out",
   cooldowns: 10,
 
