@@ -1,40 +1,22 @@
-"use strict";
-const { Canvas, loadImage } = require("canvas");
-const { resolve } = require("path");
+const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs-extra");
+const path = require("path");
 const axios = require("axios");
-
-const smallCapsMap = {
-  a:'ᴀ', b:'ʙ', c:'ᴄ', d:'ᴅ', e:'ᴇ', f:'ꜰ',
-  g:'ɢ', h:'ʜ', i:'ɪ', j:'ᴊ', k:'ᴋ', l:'ʟ',
-  m:'ᴍ', n:'ɴ', o:'ᴏ', p:'ᴘ', q:'ǫ', r:'ʀ',
-  s:'ꜱ', t:'ᴛ', u:'ᴜ', v:'ᴠ', w:'ᴡ', x:'x',
-  y:'ʏ', z:'ᴢ'
-};
-
-const toSmallCaps = t =>
-  (t || "").toLowerCase().split("").map(c => smallCapsMap[c] || c).join("");
 
 module.exports.config = {
   name: "balance",
-  aliases: ["bal"],
   version: "1.3",
-  hasPermssion: 0,
+  role: 0,
+  hasPrefix: true,
+  aliases: ["bal"],
+  description: "View your wealth card",
+  usage: "balance | balance [@mention] | [reply to message] balance",
   credits: "Chris st",
-  description: "Afficher votre carte de richesse.",
-  usePrefix: true,
-  commandCategory: "Economy",
-  usages: "[reply or tag]",
-  cooldowns: 5,
-  dependencies: {
-    "canvas": "",
-    "axios": "",
-    "fs-extra": ""
-  }
+  cooldown: 5
 };
 
-module.exports.run = async function({ api, event, args, Users, box }) {
-  const { senderID, mentions, type, messageReply } = event;
+module.exports.run = async function ({ api, event, usersData }) {
+  const { threadID, messageID, senderID, mentions, type, messageReply } = event;
 
   const ACCESS_TOKEN = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
   const BACKGROUND_URL = "https://i.imgur.com/4d1N3jV.jpeg";
@@ -85,17 +67,21 @@ module.exports.run = async function({ api, event, args, Users, box }) {
   };
 
   try {
-    const allUsers = await Users.getAll() || [];
+    let allUsers = [];
+    if (usersData && typeof usersData.getAll === "function") {
+      allUsers = await usersData.getAll();
+    }
+
     let combinedData = allUsers.map(user => ({
-      uid: user.userID,
-      name: user.name || "Utilisateur Facebook",
+      uid: user.userID || user.id,
+      name: user.name || "Facebook User",
       money: user.money || 0
     })).sort((a, b) => b.money - a.money);
 
     combinedData.forEach((user, index) => user.rank = index + 1);
 
     let targetUsers = [];
-    if (type === "message_reply" || messageReply) {
+    if (type === "message_reply" && messageReply) {
       targetUsers = [messageReply.senderID];
     } else if (mentions && Object.keys(mentions).length > 0) {
       targetUsers = Object.keys(mentions);
@@ -103,18 +89,24 @@ module.exports.run = async function({ api, event, args, Users, box }) {
       targetUsers = [senderID];
     }
 
-    const cacheDir = resolve(__dirname, 'cache');
-    fs.ensureDirSync(cacheDir);
+    const cacheFolder = path.join(__dirname, 'cache');
+    if (!fs.existsSync(cacheFolder)) fs.mkdirSync(cacheFolder, { recursive: true });
 
     for (const uid of targetUsers) {
-      const user = combinedData.find(u => u.uid == uid) || { uid, name: "Inconnu", money: 0, rank: "N/A" };
-      const canvas = new Canvas(800, 600);
+      let targetName = "Unknown";
+      if (usersData && typeof usersData.getName === "function") {
+        targetName = await usersData.getName(uid);
+      }
+
+      const user = combinedData.find(u => u.uid == uid) || { uid, name: targetName, money: 0, rank: "N/A" };
+      
+      const canvas = createCanvas(800, 600);
       const ctx = canvas.getContext('2d');
 
       try {
         const bg = await loadImage(BACKGROUND_URL);
         ctx.drawImage(bg, 0, 0, 800, 600);
-      } catch(e) {
+      } catch (e) {
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, 800, 600);
       }
@@ -125,7 +117,7 @@ module.exports.run = async function({ api, event, args, Users, box }) {
       ctx.font = 'bold 40px Arial';
       ctx.fillStyle = '#FFD700';
       ctx.textAlign = 'center';
-      ctx.fillText(toSmallCaps("CARTE DE RICHESSE"), 400, 60);
+      ctx.fillText("WEALTH CARD", 400, 60);
 
       try {
         const avatarRes = await axios.get(`https://graph.facebook.com/${uid}/picture?width=512&height=512&access_token=${ACCESS_TOKEN}`, { responseType: 'arraybuffer' });
@@ -136,15 +128,16 @@ module.exports.run = async function({ api, event, args, Users, box }) {
         ctx.clip();
         ctx.drawImage(avatar, 60, 110, 180, 180);
         ctx.restore();
-      } catch(e) {}
+      } catch (e) {}
 
       ctx.textAlign = 'left';
       ctx.fillStyle = '#FFF';
       ctx.font = 'bold 45px Arial';
-      ctx.fillText(user.name.slice(0, 15), 270, 180);
+      ctx.fillText((user.name || targetName).slice(0, 15), 270, 180);
+      
       ctx.font = '25px Arial';
       ctx.fillStyle = '#C0C0C0';
-      ctx.fillText(`${toSmallCaps("rang globale")} #${user.rank}`, 270, 220);
+      ctx.fillText(`Ranked #${user.rank} Globally`, 270, 220);
 
       ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
       ctx.fillRect(50, 320, 700, 2);
@@ -152,41 +145,33 @@ module.exports.run = async function({ api, event, args, Users, box }) {
       ctx.textAlign = 'center';
       ctx.fillStyle = '#C0C0C0';
       ctx.font = 'bold 24px Arial';
-      ctx.fillText(toSmallCaps("STATUT"), 200, 400);
+      ctx.fillText("STATUS", 200, 400);
+
       ctx.fillStyle = '#FFD700';
       ctx.font = 'bold 50px Arial';
-      ctx.fillText(user.rank <= 10 ? toSmallCaps("TYCOON") : toSmallCaps("CITOYEN"), 200, 470);
+      ctx.fillText(typeof user.rank === 'number' && user.rank <= 10 ? "TYCOON" : "CITIZEN", 200, 470);
 
       ctx.fillStyle = '#C0C0C0';
       ctx.font = 'bold 24px Arial';
-      ctx.fillText(toSmallCaps("SOLDE"), 600, 400);
+      ctx.fillText("BALANCE", 600, 400);
 
       const moneyText = formatMoney(user.money) + "$";
       ctx.font = moneyText.length > 10 ? 'bold 40px Arial' : 'bold 55px Arial';
       ctx.fillStyle = '#00FF00';
       ctx.fillText(moneyText, 600, 470);
 
-      const filePath = resolve(cacheDir, `wealth_${uid}.png`);
-      const out = fs.createWriteStream(filePath);
-      canvas.createPNGStream().pipe(out);
+      const filePath = path.join(cacheFolder, `wealth_${uid}.png`);
+      const buffer = canvas.toBuffer();
+      fs.writeFileSync(filePath, buffer);
 
-      out.on('finish', () => {
-        const msgObj = { attachment: fs.createReadStream(filePath) };
-        if (box && box.reply) {
-          box.reply(msgObj, () => fs.remove(filePath).catch(() => {}));
-        } else {
-          api.sendMessage({ ...msgObj, body: "" }, event.threadID, () => fs.remove(filePath).catch(() => {}), event.messageID);
-        }
-      });
+      api.sendMessage({
+        attachment: fs.createReadStream(filePath)
+      }, threadID, () => {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      }, messageID);
     }
-  } catch (error) {
-    console.error(error);
-    const errText = `❌ ${toSmallCaps("erreur lors de la generation de la carte.")}`;
-    if (box && box.reply) {
-      box.reply(errText);
-    } else {
-      api.sendMessage(errText, event.threadID, event.messageID);
-    }
+  } catch (err) {
+    console.error("Balance card error:", err);
+    api.sendMessage("❌ Une erreur est survenue lors de la création de la carte de richesse.", threadID, messageID);
   }
 };
-
