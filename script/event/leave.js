@@ -39,39 +39,26 @@ const LEAVE_BGS = [
   "https://i.imgur.com/Yv6iVCH.gif"
 ];
 
-async function flushBatch(threadID, batch, api, threadsData) {
+async function flushBatch(threadID, batch, api) {
   try {
-    let threadData = {};
-    if (threadsData && typeof threadsData.get === "function") {
-      threadData = await threadsData.get(threadID) || {};
-    }
-
-    if (threadData?.settings?.sendLeaveMessage === false) return;
-
-    let h = new Date().getHours();
-    if (global.utils && typeof global.utils.getTime === "function") {
-      h = parseInt(global.utils.getTime("HH"), 10);
-    }
+    const h = new Date().getHours();
     const sess = session(h);
-
-    let now = new Date().toLocaleString("fr-FR");
-    if (global.utils && typeof global.utils.getTime === "function") {
-      now = global.utils.getTime("DD/MM/YYYY HH:mm:ss");
-    }
-
-    const groupName = threadData?.threadName || "The Group";
+    const now = new Date().toLocaleString("fr-FR");
 
     let memberCount = 0;
+    let groupName = "THE GROUP";
+
     try {
       const tInfo = await api.getThreadInfo(threadID);
       memberCount = tInfo.participantIDs?.length || 0;
+      groupName = (tInfo.threadName || "THE GROUP").toUpperCase();
     } catch (_) {}
 
-    const templateRaw = threadData?.data?.leaveMessage ||
-      "👋 {userName} {type} the group.\n🕐 {time}  •  👥 {count} remaining";
+    const templateRaw = "👋 {userName} {type} the group.\n🕐 {time}  •  👥 {count} remaining";
 
     for (const { uid, name, isKicked } of batch) {
-      if (String(uid) === String(api.getCurrentUserID())) continue;
+      const botID = await api.getCurrentUserID();
+      if (String(uid) === String(botID)) continue;
 
       const type = isKicked ? "was kicked from" : "left";
 
@@ -83,10 +70,9 @@ async function flushBatch(threadID, batch, api, threadsData) {
         .replace(/\{session\}/g, sess)
         .replace(/\{count\}/g, memberCount);
 
-      const hasMention = templateRaw.includes("{userNameTag}");
       const form = {
         body: msg,
-        mentions: hasMention ? [{ tag: name, id: uid }] : undefined
+        mentions: [{ tag: name, id: uid }]
       };
 
       let imgPath = null;
@@ -104,8 +90,8 @@ async function flushBatch(threadID, batch, api, threadsData) {
           }
         });
       } catch (e) {
-        const plain = { body: form.body, mentions: form.mentions };
-        try { await api.sendMessage(plain, threadID); } catch (_) {}
+        delete form.attachment;
+        try { await api.sendMessage(form, threadID); } catch (_) {}
       }
     }
   } catch (_) {}
@@ -118,13 +104,15 @@ module.exports.config = {
   description: "Auto send leave/kick message with styled card image."
 };
 
-module.exports.onEvent = async function ({ api, event, threadsData }) {
+module.exports.handleEvent = async function ({ api, event }) {
   if (event.logMessageType !== "log:unsubscribe") return;
 
   const { threadID } = event;
   const uid = event.logMessageData?.leftParticipantFbId;
   if (!uid) return;
-  if (String(uid) === String(api.getCurrentUserID())) return;
+
+  const botID = await api.getCurrentUserID();
+  if (String(uid) === String(botID)) return;
 
   const isKicked = String(uid) !== String(event.author);
 
@@ -145,7 +133,6 @@ module.exports.onEvent = async function ({ api, event, threadsData }) {
     delete global.temp[timerKey];
     const batch = global.temp._leaveQueue.get(threadID) || [];
     global.temp._leaveQueue.delete(threadID);
-    flushBatch(threadID, batch, api, threadsData).catch(() => {});
+    flushBatch(threadID, batch, api).catch(() => {});
   }, BATCH_MS);
 };
-
