@@ -1,158 +1,208 @@
 const fs = require("fs-extra");
-const axios = require("axios");
 const path = require("path");
-
-const smallCapsMap = {
-  a:'ᴀ', b:'ʙ', c:'ᴄ', d:'ᴅ', e:'ᴇ', f:'ꜰ',
-  g:'ɢ', h:'ʜ', i:'ɪ', j:'ᴊ', k:'ᴋ', l:'ʟ',
-  m:'ᴍ', n:'ɴ', o:'ᴏ', p:'ᴘ', q:'ǫ', r:'ʀ',
-  s:'ꜱ', t:'ᴛ', u:'ᴜ', v:'ᴠ', w:'ᴡ', x:'x',
-  y:'ʏ', z:'ᴢ'
-};
-
-const toSmallCaps = t =>
-  (t || "").toLowerCase().split("").map(c => smallCapsMap[c] || c).join("");
+const { createCanvas, loadImage } = require("canvas");
 
 module.exports.config = {
   name: "help",
-  version: "1.18",
+  version: "1.20",
   role: 0,
   hasPrefix: true,
-  aliases: ["use", "cmdl"],
-  description: "View command usage and list all commands or commands by category",
-  usage: "{pn} / help cmdName\n{pn} -c <categoryName>",
+  aliases: ["use", "cmdl", "info"],
+  description: "Afficher l'utilisation et la liste des commandes",
+  usage: "{pn} help [nomCmd]",
   credits: "chris",
   cooldown: 5,
 };
 
-module.exports.run = async function ({ api, event, args, prefix, role, threadsData, Utils, enableCommands }) {
+module.exports.run = async function ({ api, event, args, prefix, role, Utils }) {
   const { threadID, messageID } = event;
-  const commandsMap = global.GoatBot ? global.GoatBot.commands : (Utils?.commands || new Map());
-  const aliasesMap = global.GoatBot ? global.GoatBot.aliases : (Utils?.aliases || new Map());
 
-  function roleTextToString(roleText) {
-    switch (roleText) {
+  // Fonction utilitaire pour retrouver une commande via son nom ou alias
+  function findCommand(cmdName) {
+    if (!cmdName || !Utils?.commands) return null;
+    const search = cmdName.toLowerCase();
+    for (const [aliases, cmdData] of Utils.commands.entries()) {
+      if (Array.isArray(aliases) && aliases.includes(search)) {
+        return cmdData;
+      }
+    }
+    return null;
+  }
+
+  // Convertisseur de rôle
+  function roleTextToString(r) {
+    const roleNum = Number(r);
+    switch (roleNum) {
       case 0:
-        return "0 (All users)";
+        return "0 (Tous les utilisateurs)";
       case 1:
-        return "1 (Group administrators)";
+        return "1 (Administrateurs du groupe)";
       case 2:
-        return "2 (Admin bot)";
+        return "2 (Administrateurs du Bot)";
+      case 3:
+        return "3 (Super Admin)";
       default:
-        return "Unknown role";
+        return `${r} (Utilisateur)`;
     }
   }
 
-  if (args.length === 0) {
-    const categories = {};
-    let msg = "";
-
-    msg += "╔══════════════╗\n🔹 𝙼𝙸𝙽𝙰𝚃𝙾 𝙽𝙰𝙼𝙸𝙺𝙰𝚉𝙴 🔹\n╚══════════════╝\n";
-
-    for (const [name, value] of commandsMap) {
-      if (value.config.role > 1 && role < value.config.role) continue;
-
-      const category = value.config.category || "Uncategorized";
-      categories[category] = categories[category] || { commands: [] };
-      categories[category].commands.push(name);
-    }
-
-    Object.keys(categories).forEach((category) => {
-      if (category !== "info") {
-        msg += `\n╭────────────⭓\n│『 ${category.toUpperCase()} 』`;
-
-        const names = categories[category].commands.sort();
-        names.forEach((item) => {
-          msg += `\n│𖤍 ${item}`;
-        });
-
-        msg += `\n╰────────⭓`;
+  try {
+    // 1. AFFICHAGE DE LA LISTE PRINCIPALE DES COMMANDES
+    if (args.length === 0) {
+      const allCommands = [];
+      
+      if (Utils?.commands) {
+        for (const cmdObj of Utils.commands.values()) {
+          if (cmdObj && cmdObj.name) {
+            if (cmdObj.role && Number(cmdObj.role) > Number(role)) continue;
+            if (!allCommands.some(c => c.name === cmdObj.name)) {
+              allCommands.push(cmdObj.name);
+            }
+          }
+        }
       }
-    });
 
-    const totalCommands = commandsMap.size || (commandsMap.length ? commandsMap.length : 0);
-    msg += `\n𝙰𝚌𝚝𝚞𝚎𝚕𝚕𝚎𝚖𝚎𝚗𝚝,  𝚖𝚒𝚗𝚊𝚝𝚘 à ${totalCommands} 𝙲𝚘𝚖𝚖𝚊𝚗𝚍𝚎𝚜 𝚞𝚝𝚒𝚕𝚒𝚜𝚊𝚋𝚕𝚎𝚜\n`;
-    msg += `\n𝗧𝘆𝗽𝗲 ${prefix}𝚑𝚎𝚕𝚙 𝚗𝚘𝚖 𝚍𝚎 𝚕𝚊 𝚌𝚖𝚍  𝚙𝚘𝚞𝚛 𝚊𝚏𝚏𝚒𝚌𝚑𝚎𝚛 𝚕𝚎𝚜 𝚍é𝚝𝚊𝚒𝚕𝚜 𝚍𝚎 𝚌𝚎𝚝𝚝𝚎 𝚌𝚘𝚖𝚖𝚊𝚗𝚍𝚎\n`;
-    msg += `\n🫧𝑩𝑶𝑻 𝑵𝑨𝑴𝑬🫧:𝙼𝙸𝙽𝙰𝚃𝙾 𝙽𝙰𝙼𝙸𝙺𝙰𝚉𝙴⭕`;
-    msg += `\n𓀬 𝐁𝐎𝐓 𝐎𝐖𝐍𝐄𝐑 𓀬`;
-    msg += `\n 	 					`;
-    msg += `\n𝙁𝘽:https://www.facebook.com/profile.php?id=100094118835962`;
+      allCommands.sort();
 
-    const helpListImages = [
-      "https://i.ibb.co/Kgn10xG/684797258-1327405002818159-3504065921443860282-n-jpg-stp-dst-jpg-p480x480-tt6-nc-cat-109-ccb-1-7-n.jpg",
-      "https://i.ibb.co/HT4Hk6SF/649666902-1547549473009164-5960445224328660848-n-jpg-stp-dst-jpg-p480x480-tt6-nc-cat-104-ccb-1-7-n.jpg",
-      "https://i.ibb.co/HTjs925j/685155293-936519109213674-2388955215511618307-n-jpg-stp-dst-jpg-s480x480-tt6-nc-cat-105-ccb-1-7-nc.jpg",
-      "https://i.ibb.co/svXBgxw2/516688787-1388605512441969-5696309895683148133-n-jpg-stp-dst-jpg-p480x480-tt6-nc-cat-107-ccb-1-7-n.jpg",
-      "https://i.ibb.co/0HkWH81/691200995-2775407616149485-9104723335245991500-n-gif-nc-cat-106-ccb-1-7-nc-sid-cf94fc-nc-eui2-Ae-E.gif",
-      "https://i.ibb.co/VYLq0rX3/495047004-2156248254796411-1328262576645206658-n-jpg-stp-dst-jpg-s480x480-tt6-nc-cat-108-ccb-1-7-n.jpg",
-      "https://i.ibb.co/rTMN49m/686398590-1537926281285123-3076869716863077899-n-jpg-stp-dst-jpg-p480x480-tt6-nc-cat-102-ccb-1-7-n.jpg"
-    ];
+      let msg = "╔══════════════╗\n🔹 𝙼𝙸𝙽𝙰𝚃𝙾 𝙽𝙰𝙼𝙸𝚉𝙰𝙺𝙴 🔹\n╚══════════════╝\n";
+      msg += `\n╭────────────⭓\n│『 LISTE DES COMMANDES 』`;
+      
+      allCommands.forEach((item) => {
+        msg += `\n│𖤍 ${item}`;
+      });
+      
+      msg += `\n╰────────⭓`;
 
-    const helpListImage = helpListImages[Math.floor(Math.random() * helpListImages.length)];
+      msg += `\n\n𝙰𝚌𝚝𝚞𝚎𝚕𝚕𝚎𝚖𝚎𝚗𝚝, 𝚖𝚒𝚗𝚊𝚝𝚘 à ${allCommands.length} 𝙲𝚘𝚖𝚖𝚊𝚗𝚍𝚎𝚜 𝚞𝚝𝚒𝚕𝚒𝚜𝚊𝚋𝚕𝚎𝚜\n`;
+      msg += `\n𝗧𝘆𝗽𝗲 ${prefix}𝚑𝚎𝚕𝚙 𝚗𝚘𝚖 𝚍𝚎 𝚕𝚊 𝚌𝚖𝚍 𝚙𝚘𝚞𝚛 𝚊𝚏𝚏𝚒𝚌𝚑𝚎𝚛 𝚕𝚎𝚜 𝚍é𝚝𝚊𝚒𝚕𝚜 𝚍𝚎 𝚌𝚎𝚝𝚝𝚎 𝚌𝚘𝚖𝚖𝚊𝚗𝚍𝚎\n`;
+      msg += `\n🫧𝑩𝑶𝑻 𝑵𝑨𝑴𝑬🫧: 𝙼𝙸𝙽𝙰𝚃𝙾 𝙽𝙰𝙼𝙸𝙺𝙰𝚉𝙴⭕`;
+      msg += `\n𓀬 𝐁𝐎𝐓 𝐎𝐖𝐍𝐄𝐑 𓀬`;
+      msg += `\n𝙁𝘽: https://www.facebook.com/profile.php?id=100094118835962`;
 
-    api.sendMessage(msg, threadID, messageID);
-
-  } else if (args[0] === "-c") {
-    if (!args[1]) {
-      api.sendMessage("Please specify a category name.", threadID, messageID);
-      return;
+      return api.sendMessage(msg, threadID, messageID);
     }
 
-    const categoryName = args[1].toLowerCase();
-    const filteredCommands = Array.from(commandsMap.values()).filter(
-      (cmd) => cmd.config?.category?.toLowerCase() === categoryName
-    );
-
-    if (filteredCommands.length === 0) {
-      api.sendMessage(`No commands found in the category "${categoryName}".`, threadID, messageID);
-      return;
-    }
-
-    let msg = `╔══════════════╗\n༒︎ ${categoryName.toUpperCase()} COMMANDS ༒︎\n╚══════════════╝\n`;
-
-    filteredCommands.forEach((cmd) => {
-      msg += `\n☠︎︎ ${cmd.config.name} `;
-    });
-
-    api.sendMessage(msg, threadID, messageID);
-
-  } else {
+    // 2. DETAILS D'UNE COMMANDE SPÉCIFIQUE
     const commandName = args[0].toLowerCase();
-    const command = commandsMap.get ? (commandsMap.get(commandName) || commandsMap.get(aliasesMap.get(commandName))) : null;
+    const command = findCommand(commandName);
 
     if (!command) {
-      api.sendMessage(`Command "${commandName}" not found.`, threadID, messageID);
-    } else {
-      const configCommand = command.config;
-      const roleText = roleTextToString(configCommand.role);
-      const author = configCommand.author || configCommand.credits || "Unknown";
-
-      const longDescription = configCommand.longDescription
-        ? (configCommand.longDescription.en || configCommand.longDescription)
-        : (configCommand.description || "No description");
-
-      const guideBody = configCommand.guide?.en || configCommand.usage || "No guide available.";
-      const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
-
-      const response = 
-        `╭── 𝙼𝙸𝙽𝙰𝚃𝙾 𝚅𝟹 ────⭓\n` +
-        `│ ${configCommand.name}\n` +
-        `├── 𝑰𝑵𝑭𝑶\n` +
-        `│ 𝐷𝑒𝑠𝑐𝑟𝑖𝑝𝑡𝑖𝑜𝑛: ${longDescription}\n` +
-        `│ 𝑂𝑡ℎ𝑒𝑟 𝑁𝑎𝑚𝑒: ${configCommand.aliases ? configCommand.aliases.join(", ") : "Do not have"}\n` +
-        `│ 𝑉𝑒𝑟𝑠𝑖𝑜𝑛: ${configCommand.version || "1.0"}\n` +
-        `│ 𝑅𝑜𝑙𝑒: ${roleText}\n` +
-        `│ 𝑇𝑖𝑚𝑒 𝑃𝑒𝑟 𝐶𝑜𝑚𝑚𝑎𝑛𝑑: ${configCommand.countDown || configCommand.cooldown || 1}s\n` +
-        `│ 𝐴𝑢𝑡ℎ𝑜𝑟: ${author}\n` +
-        `├── 𝑼𝑺𝑨𝑮𝑬\n` +
-        `│ ${usage}\n` +
-        `├── 𝑵𝑶𝑻𝑬𝑺\n` +
-        `│ 𝑇ℎ𝑒 𝑐𝑜𝑛𝑡𝑒𝑛𝑡 𝑖𝑛𝑠𝑖𝑑𝑒 𝙼𝙸𝙽𝙰𝚃𝙾 𝚅𝟹 𝑐𝑎𝑛 𝑏𝑒 𝑐ℎ𝑎𝑛𝑔𝑒𝑑\n` +
-        `│ ♕︎ 𝐎𝐖𝐍𝐄𝐑 ♕︎:☠︎︎ 𝙼𝙸𝙽𝙰𝚃𝙾 𝚅𝟹 ☠︎︎\n` +
-        `╰━━━━━━━❖`;
-
-      api.sendMessage(response, threadID, messageID);
+      return api.sendMessage(`Commande "${commandName}" introuvable.`, threadID, messageID);
     }
+
+    const roleText = roleTextToString(command.role ?? 0);
+    const author = command.credits || "Inconnu";
+    const desc = command.description || "Pas de description disponible";
+    const aliasesList = Array.isArray(command.aliases) ? command.aliases.join(", ") : "Aucun";
+
+    let rawUsage = command.usage || "{pn}";
+    let usageFormatted = rawUsage
+      .replace(/{p}/g, prefix)
+      .replace(/{pn}/g, `${prefix}${command.name}`)
+      .replace(/{n}/g, command.name);
+
+    const response =
+      `╭── 𝙼𝙸𝙽𝙰𝚃𝙾 𝚅𝟹 ────⭓\n` +
+      `│ Nom: ${command.name}\n` +
+      `├── 𝑰𝑵𝑭𝑶\n` +
+      `│ 𝐷𝑒𝑠𝑐𝑟𝑖𝑝𝑡𝑖𝑜𝑛: ${desc}\n` +
+      `│ 𝑂𝑡ℎ𝑒𝑟 𝑁𝑎𝑚𝑒: ${aliasesList}\n` +
+      `│ 𝑉𝑒𝑟𝑠𝑖𝑜𝑛: ${command.version || "1.0.0"}\n` +
+      `│ 𝑅𝑜𝑙𝑒: ${roleText}\n` +
+      `│ 𝑇𝑖𝑚𝑒 𝑃𝑒𝑟 𝐶𝑜𝑚𝑚𝑎𝑛𝑑: ${command.cooldown || 5}s\n` +
+      `│ 𝐴𝑢𝑡ℎ𝑜𝑟: ${author}\n` +
+      `├── 𝑼𝑺𝑨𝑮𝑬\n` +
+      `│ ${usageFormatted}\n` +
+      `├── 𝑵𝑶𝑻𝑬𝑺\n` +
+      `│ 𝑇ℎ𝑒 𝑐𝑜𝑛𝑡𝑒𝑛𝑡 𝑖𝑛𝑠𝑖𝑑𝑒 𝙼𝙸𝙽𝙰𝚃𝙾 𝚅𝟹 𝑐𝑎𝑛 𝑏𝑒 𝑐ℎ𝑎𝑛𝑔𝑒𝑑\n` +
+      `│ ♕︎ 𝐎𝐖𝐍𝐄𝐑 ♕︎:☠︎︎ 𝙼𝙸𝙽𝙰𝚃𝙾 𝚅𝟹 ☠︎︎\n` +
+      `╰━━━━━━━❖`;
+
+    return api.sendMessage(response, threadID, messageID);
+
+  } catch (error) {
+    console.error(error);
+    return api.sendMessage("Une erreur est survenue lors de l'exécution de la commande help.", threadID, messageID);
   }
 };
-        
+
+// EVENEMENT DÉCLENCHÉ QUAND UN UTILISATEUR ÉCRIT "prefix"
+module.exports.handleEvent = async function ({ api, event, prefix }) {
+  const { threadID, messageID, senderID, body } = event;
+  if (!body || body.toLowerCase() !== "prefix") return;
+
+  try {
+    let userName = "Utilisateur";
+    try {
+      const info = await api.getUserInfo(senderID);
+      userName = info[senderID]?.name || "Utilisateur";
+    } catch (e) {
+      userName = "Utilisateur";
+    }
+
+    const botName = "🥷 𝙼𝚒𝚗𝚊𝚝𝚘 𝙽𝚊𝚖𝚒𝚔𝚊𝚣𝚎🌀";
+    const currentPrefix = prefix || "!";
+
+    // 🎨 Génération de l'image Canvas
+    const canvas = createCanvas(900, 500);
+    const ctx = canvas.getContext("2d");
+
+    try {
+      const bg = await loadImage("https://i.imgur.com/HwiR4cT.png");
+      ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+    } catch (e) {
+      ctx.fillStyle = "#1e1e2e";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    ctx.fillStyle = "rgba(0,0,0,0.65)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#d8b4fe";
+    ctx.font = "bold 40px Sans";
+    ctx.textAlign = "center";
+    ctx.fillText("MINATO PREFIX SYSTEM", canvas.width / 2, 80);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "26px Sans";
+
+    ctx.fillText(`User: ${userName}`, canvas.width / 2, 170);
+    ctx.fillText(`Prefix: ${currentPrefix}`, canvas.width / 2, 230);
+
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const date = now.toDateString();
+
+    ctx.fillText(`Time: ${time}`, canvas.width / 2, 290);
+    ctx.fillText(`Date: ${date}`, canvas.width / 2, 340);
+
+    ctx.font = "italic 20px Sans";
+    ctx.fillStyle = "#c084fc";
+    ctx.fillText(`Powered by ${botName}`, canvas.width / 2, 420);
+
+    const buffer = canvas.toBuffer();
+    const folder = path.join(__dirname, "cache");
+    if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
+
+    const filePath = path.join(folder, `prefix_${senderID}.png`);
+    fs.writeFileSync(filePath, buffer);
+
+    const textMsg = 
+      `〔 ʜᴇʏ ${userName}, ᴛᴜ ᴀs ʙᴇsᴏɪɴ ᴅᴇ ᴍᴏɴ sᴄᴇᴀᴜ ᴅᴇ ᴛᴇ́ʟᴇ́ᴘᴏʀᴛᴀᴛɪᴏɴ ‽ 〕\n\n` +
+      `┣ ᴘʀᴇ́ꜰɪxᴇ ɪᴄɪ : ${currentPrefix}\n` +
+      `┣ ᴍᴇɴᴜ ᴅᴇs ᴊᴜᴛsᴜs : ${currentPrefix}help\n` +
+      `┣ ᴅᴇ́ᴠᴇʟᴏᴘᴘᴇᴜʀ : ᴄʜʀɪs ☠️\n\n` +
+      `〔 ᴊᴇ sᴜɪs ${botName}, ᴘʀᴇ̂ᴛ ᴀ̀ ᴘʀᴏᴛᴇ́ɢᴇʀ ʟᴇ ᴠɪʟʟᴀɢᴇ ᴀ̀ ᴛᴇs ᴄᴏ̂ᴛᴇ́s 🍃 〕`;
+
+    api.sendMessage({
+      body: textMsg,
+      attachment: fs.createReadStream(filePath)
+    }, threadID, () => {
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }, messageID);
+
+  } catch (error) {
+    console.error("Erreur dans handleEvent de help:", error);
+  }
+};
+  
