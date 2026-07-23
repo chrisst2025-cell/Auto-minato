@@ -44,32 +44,17 @@ async function fetchCard(uid, name, groupName, memberCount, bg) {
   return imgPath;
 }
 
-async function flushBatch(threadID, batch, api, threadsData) {
+async function flushBatch(threadID, batch, api, prefix) {
   try {
-    let threadData = {};
-    if (threadsData && typeof threadsData.get === "function") {
-      threadData = await threadsData.get(threadID) || {};
-    }
-
-    if (threadData?.settings?.sendWelcomeMessage === false) return;
-
-    let prefix = "/";
-    if (global.utils && typeof global.utils.getPrefix === "function") {
-      prefix = global.utils.getPrefix(threadID);
-    } else if (global.config && global.config.PREFIX) {
-      prefix = global.config.PREFIX;
-    }
-
-    const dataBanned = threadData?.data?.banned_ban || [];
     let memberCount = 0;
     let groupName = "OUR GROUP";
 
     try {
       const tInfo = await api.getThreadInfo(threadID);
       memberCount = tInfo.participantIDs?.length || 0;
-      groupName = (threadData?.threadName || tInfo.threadName || "Our Group").toUpperCase();
+      groupName = (tInfo.threadName || "OUR GROUP").toUpperCase();
     } catch (_) {
-      groupName = (threadData?.threadName || "Our Group").toUpperCase();
+      groupName = "OUR GROUP";
     }
 
     const h = new Date().getHours();
@@ -82,16 +67,12 @@ async function flushBatch(threadID, batch, api, threadsData) {
       "Type {prefix}help for all commands.";
 
     for (const { uid, name } of batch) {
-      if (dataBanned.some(b => b.id == uid)) continue;
-
-      const template = threadData?.data?.welcomeMessage || defaultTemplate;
-
-      const body = template
+      const body = defaultTemplate
         .replace(/\{userName\}|\{userNameTag\}/g, name)
-        .replace(/\{boxName\}|\{threadName\}/g, threadData?.threadName || groupName)
+        .replace(/\{boxName\}|\{threadName\}/g, groupName)
         .replace(/\{count\}/g, memberCount)
         .replace(/\{session\}/g, session)
-        .replace(/\{prefix\}/g, prefix);
+        .replace(/\{prefix\}/g, prefix || "/");
 
       const form = {
         body,
@@ -129,32 +110,24 @@ module.exports.config = {
   description: "Auto welcome new members with styled image card and custom templates."
 };
 
-module.exports.onEvent = async function ({ api, event, threadsData }) {
+module.exports.handleEvent = async function ({ api, event, prefix }) {
   if (event.logMessageType !== "log:subscribe") return;
 
   const { threadID } = event;
   const participants = event.logMessageData?.addedParticipants || [];
   if (!participants.length) return;
 
-  const botID = api.getCurrentUserID();
+  const botID = await api.getCurrentUserID();
+  const currentPrefix = prefix || "/";
 
-  let prefix = "/";
-  if (global.utils && typeof global.utils.getPrefix === "function") {
-    prefix = global.utils.getPrefix(threadID);
-  } else if (global.config && global.config.PREFIX) {
-    prefix = global.config.PREFIX;
-  }
-
+  // Si le bot a été ajouté à un groupe
   if (participants.some(p => p.userFbId == botID)) {
-    const nick = global.GoatBot?.config?.nickNameBot || global.config?.BOTNAME;
-    if (nick) {
-      try { api.changeNickname(nick, threadID, botID); } catch (_) {}
-    }
-    const welcomeBotMsg = `🤖 Thanks for adding me!\n◈ Prefix : ${prefix}\n◈ Commands: ${prefix}help`;
+    const welcomeBotMsg = `🤖 Thanks for adding me!\n◈ Prefix : ${currentPrefix}\n◈ Commands: ${currentPrefix}help`;
     try { api.sendMessage(welcomeBotMsg, threadID); } catch (_) {}
     return;
   }
 
+  // Initialisation du lot d'accueil (batch)
   if (!global.temp.welcomeEvent[threadID]) {
     global.temp.welcomeEvent[threadID] = { timer: null, batch: [] };
   }
@@ -172,7 +145,6 @@ module.exports.onEvent = async function ({ api, event, threadsData }) {
   global.temp.welcomeEvent[threadID].timer = setTimeout(() => {
     const batch = global.temp.welcomeEvent[threadID]?.batch || [];
     delete global.temp.welcomeEvent[threadID];
-    flushBatch(threadID, batch, api, threadsData).catch(() => {});
+    flushBatch(threadID, batch, api, currentPrefix).catch(() => {});
   }, BATCH_MS);
 };
-
