@@ -1,84 +1,107 @@
 const axios = require("axios");
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 
 module.exports.config = {
   name: "pinterest",
-  version: "1.0",
+  version: "2.0.0",
   role: 0,
   hasPrefix: true,
-  aliases: ["pin", "pint"],
-  description: "Search Pinterest and get image results",
-  usage: "pinterest <keyword>",
-  credits: "Chris st",
-  cooldown: 5
+  aliases: ["pin"],
+  description: "Rechercher des images sur Pinterest",
+  usage: "{pn} <requête> [-n ou -r]",
+  credits: "SIFAT (adapté par Chris)",
+  countDown: 10
 };
 
-module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID } = event;
-  const query = args.join(" ");
+module.exports.run = async function ({ api, event, args, prefix }) {
+  const { threadID, messageID, senderID } = event;
 
-  if (!query) {
-    return api.sendMessage("❗ Please provide a search keyword.\nExample: pinterest Naruto", threadID, messageID);
+  let count = 6;
+  let random = false;
+
+  const countArg = args.find(a => /^-\d+$/.test(a));
+  const randomArg = args.find(a => a === "-r");
+
+  if (countArg) {
+    count = Math.min(parseInt(countArg.slice(1), 10), 25);
+    args = args.filter(a => a !== countArg);
+  }
+  if (randomArg) {
+    random = true;
+    args = args.filter(a => a !== randomArg);
   }
 
-  api.setMessageReaction("⏳", messageID, () => {}, true);
+  const query = args.join(" ").trim();
+  if (!query) {
+    return api.sendMessage(
+      `⌀ ᴘʟᴇᴀꜱᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ꜱᴇᴀʀᴄʜ ǫᴜᴇʀʏ\nExemple : ${prefix}pinterest minato`,
+      threadID,
+      messageID
+    );
+  }
 
-  const cacheDir = path.join(__dirname, "cache");
-  if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+  const waitMsg = await api.sendMessage("◈ ꜱᴇᴀʀᴄʜɪɴɢ ᴘɪɴᴛᴇʀᴇꜱᴛ...", threadID);
 
   try {
-    const count = 5;
-    const url = `https://betadash-api-swordslush-production.up.railway.app/pinterest?search=${encodeURIComponent(query)}&count=${count}`;
-    const res = await axios.get(url);
+    const res = await axios.get(`https://egret-driving-cattle.ngrok-free.app/api/pin?query=${encodeURIComponent(query)}&num=90`, {
+      timeout: 15000
+    });
+    const allImageUrls = res.data.results || [];
 
-    const imageList = res.data?.data;
-    if (!Array.isArray(imageList) || imageList.length === 0) {
-      api.setMessageReaction("❌", messageID, () => {}, true);
-      return api.sendMessage("❌ No results found!", threadID, messageID);
+    if (waitMsg && waitMsg.messageID) {
+      api.unsend(waitMsg.messageID).catch(() => {});
+    }
+
+    if (!allImageUrls.length) {
+      return api.sendMessage(`⌀ ɴᴏ ɪᴍᴀɢᴇꜱ ꜰᴏᴜɴᴅ ꜰᴏʀ "${query}"`, threadID, messageID);
+    }
+
+    let pool = random ? allImageUrls.sort(() => Math.random() - 0.5) : allImageUrls;
+    const urls = pool.slice(0, count);
+
+    const folderPath = path.join(__dirname, "cache");
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
     }
 
     const attachments = [];
-    const downloadedPaths = [];
+    const filePaths = [];
 
-    for (let i = 0; i < imageList.length; i++) {
+    for (let i = 0; i < urls.length; i++) {
       try {
-        const imageRes = await axios.get(imageList[i], { responseType: "arraybuffer" });
-        const imagePath = path.join(cacheDir, `pin_${Date.now()}_${i}.jpg`);
-        fs.writeFileSync(imagePath, Buffer.from(imageRes.data));
-        downloadedPaths.push(imagePath);
-        attachments.push(fs.createReadStream(imagePath));
-      } catch (e) {
-        console.error(`Failed to download image ${i}:`, e);
+        const imgRes = await axios.get(urls[i], { responseType: "arraybuffer", timeout: 10000 });
+        const filePath = path.join(folderPath, `pin_${senderID}_${i}_${Date.now()}.jpg`);
+        fs.writeFileSync(filePath, imgRes.data);
+        filePaths.push(filePath);
+        attachments.push(fs.createReadStream(filePath));
+      } catch (err) {
+        // Ignore individual broken links
       }
     }
 
-    if (attachments.length === 0) {
-      api.setMessageReaction("❌", messageID, () => {}, true);
-      return api.sendMessage("❌ Failed to download images.", threadID, messageID);
+    if (!attachments.length) {
+      return api.sendMessage("⌀ ꜰᴀɪʟᴇᴅ ᴛᴏ ʟᴏᴀᴅ ɪᴍᴀɢᴇꜱ", threadID, messageID);
     }
 
-    api.setMessageReaction("✅", messageID, () => {}, true);
-
-    return api.sendMessage(
+    api.sendMessage(
       {
-        body: `🔍 Pinterest results for: "${query}"`,
+        body: `✦ ᴘɪɴᴛᴇʀᴇꜱᴛ: "${query}"\n◈ ꜱʜᴏᴡɪɴɢ ${attachments.length}/${allImageUrls.length} ɪᴍᴀɢᴇꜱ${random ? " (ʀᴀɴᴅᴏᴍ)" : ""}`,
         attachment: attachments
       },
       threadID,
       () => {
-        downloadedPaths.forEach(filePath => {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-          }
+        filePaths.forEach(file => {
+          if (fs.existsSync(file)) fs.unlinkSync(file);
         });
       },
       messageID
     );
 
-  } catch (err) {
-    console.error("Pinterest error:", err);
-    api.setMessageReaction("❌", messageID, () => {}, true);
-    return api.sendMessage("🚫 Error fetching from Pinterest API.", threadID, messageID);
+  } catch (error) {
+    if (waitMsg && waitMsg.messageID) {
+      api.unsend(waitMsg.messageID).catch(() => {});
+    }
+    return api.sendMessage("⌀ ꜱᴇʀᴠᴇʀ ᴏꜰꜰʟɪɴᴇ ᴏʀ ᴇʀʀᴏʀ", threadID, messageID);
   }
 };
